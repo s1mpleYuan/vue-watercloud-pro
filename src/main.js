@@ -6,7 +6,9 @@ import './plugins/element.js';
 import axios from 'axios';
 import _ from 'lodash';
 import 'font-awesome/css/font-awesome.css';
+import Qs from 'qs';
 
+Vue.prototype.$jsonParser = Qs;
 Vue.prototype._ = _;
 // import Echarts from './plugins/echarts';
 // Vue.prototype.echarts = Echarts;
@@ -23,10 +25,10 @@ Vue.prototype.$http = axios;
 // 配置请求的根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/';
 
-// axios.interceptors.response.use(config => {
-
-//   return config;
-// });
+axios.interceptors.request.use(config => {
+  
+  return config;
+});
 axios.interceptors.response.use(
   response => {
     const { data, code, msg } = response.data;

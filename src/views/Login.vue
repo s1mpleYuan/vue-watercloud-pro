@@ -16,14 +16,14 @@
           <el-form-item label="账号" class="form-item">
             <el-input
               prefix-icon="el-icon-user-solid"
-              v-model="loginForm.account"
+              v-model="loginForm.loginStr"
             ></el-input>
           </el-form-item>
           <el-form-item label="密码" class="form-item">
             <el-input
               type="password"
               prefix-icon="el-icon-lock"
-              v-model="loginForm.password"
+              v-model="loginForm.pwd"
             ></el-input>
           </el-form-item>
           <el-form-item class="form-item">
@@ -44,8 +44,8 @@ export default {
       avatar:
         'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
       loginForm: {
-        account: '110011',
-        password: '123456',
+        loginStr: '110011',
+        pwd: '123456',
       },
       user: {
         username: 'admin01',
@@ -58,9 +58,10 @@ export default {
   created() {},
   methods: {
     async login() {
-      const { data, code, msg } = await this.$http.get(
-        `/login?account=${this.loginForm.account}&pwd=${this.loginForm.password}`
-      );
+      // const { data, code, msg } = await this.$http.get(
+      //   `/login?account=${this.loginForm.account}&pwd=${this.loginForm.password}`
+      // );
+      const { data, code, msg } = await this.$http.post('/users/login', this.$jsonParser.stringify(this.loginForm));
       const curLoading = this.$loading({
         lock: true,
         text: '登录中...'
@@ -69,7 +70,7 @@ export default {
         if (code === 1) {
           this.user = data;
           localStorage.setItem('userInfo', JSON.stringify(this.user));
-          localStorage.setItem('local_token', 'dasdasd');
+          localStorage.setItem('token', data.token);
           curLoading.close();
           this.$message.success({
             message: msg,

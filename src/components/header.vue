@@ -169,6 +169,7 @@ export default {
       })
         .then(() => {
           // 确认退出 清除 Token
+          localStorage.clear();
           // 回退到 login 页面
           this.$router.push('/login');
           this.$message({
