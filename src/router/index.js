@@ -19,14 +19,17 @@ router.beforeEach((to, from, next) => {
   // next('/login') 强制跳转到 login 
 
   // 如果存在title，则赋值
+  if (to.path == '/login') {
+    localStorage.clear();
+    return next();
+  }
+  const token = localStorage.getItem('token');
+  if (!token) return next('/login');
+  // 进度条
+  NProgress.start();
   if (to.meta.title) {
     document.title = to.meta.title;
   }
-  // if (to.path == '/login') return next();
-  // const token = localStorage.getItem('local_token');
-  // if (!token) return next('/login');
-  // 进度条
-  NProgress.start();
   next();
 });
 

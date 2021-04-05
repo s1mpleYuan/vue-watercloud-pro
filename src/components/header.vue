@@ -169,7 +169,7 @@ export default {
       })
         .then(() => {
           // 确认退出 清除 Token
-          localStorage.clear();
+          // localStorage.clear();
           // 回退到 login 页面
           this.$router.push('/login');
           this.$message({
@@ -183,9 +183,12 @@ export default {
       // 回退
       this.$router.go(-1);
     },
-    goAccountAuthorization() {
+    async goAccountAuthorization() {
+      const res = await this.$http.get('/test');
+      console.log(res);
+      
       // 进入配置账户权限
-      this.$router.push('/accountAuthorization');
+      // this.$router.push('/accountAuthorization');
     },
   },
 };

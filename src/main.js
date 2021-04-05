@@ -8,7 +8,7 @@ import _ from 'lodash';
 import 'font-awesome/css/font-awesome.css';
 import Qs from 'qs';
 
-Vue.prototype.$jsonParser = Qs;
+Vue.prototype.$qs = Qs;
 Vue.prototype._ = _;
 // import Echarts from './plugins/echarts';
 // Vue.prototype.echarts = Echarts;
@@ -26,7 +26,10 @@ Vue.prototype.$http = axios;
 axios.defaults.baseURL = 'http://127.0.0.1:8888/';
 
 axios.interceptors.request.use(config => {
-  
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = token;
+  }
   return config;
 });
 axios.interceptors.response.use(
@@ -38,6 +41,18 @@ axios.interceptors.response.use(
         code: 1,
         msg
       };
+    } else if (code == 401) {
+      Vue.prototype.$alert(msg, '提示', {
+        confirmButtonText: '确认',
+        callback: action => {
+          if (action == 'confirm') {
+            // 
+           router.push('/login');
+          } else {
+            return response.data;
+          }
+        }
+      });
     }
   }
 );

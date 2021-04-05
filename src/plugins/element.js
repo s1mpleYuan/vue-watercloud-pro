@@ -42,6 +42,7 @@ Vue.use(Element);
 Vue.prototype.$confirm = Element.MessageBox.confirm;
 Vue.prototype.$message = Element.Message;
 Vue.prototype.$loading = Element.Loading.service;
+Vue.prototype.$alert = Element.MessageBox.alert;
 
 
 // Vue.use(Footer);

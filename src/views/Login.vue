@@ -55,13 +55,15 @@ export default {
       },
     };
   },
-  created() {},
+  created() {
+  },
   methods: {
     async login() {
       // const { data, code, msg } = await this.$http.get(
       //   `/login?account=${this.loginForm.account}&pwd=${this.loginForm.password}`
       // );
-      const { data, code, msg } = await this.$http.post('/users/login', this.$jsonParser.stringify(this.loginForm));
+      const { data, code, msg } = await this.$http.post('/users/login', this.$qs.stringify(this.loginForm));
+      
       const curLoading = this.$loading({
         lock: true,
         text: '登录中...'
