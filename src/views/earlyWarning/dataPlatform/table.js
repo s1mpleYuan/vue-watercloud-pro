@@ -1,6 +1,6 @@
 const tableColumns = [
   {
-    prop: 'serials',
+    prop: 'Serials',
     label: '序号',
     isShow: false,
     width: '60',
@@ -9,94 +9,102 @@ const tableColumns = [
     fixed: true
   },
   {
-    prop: 'task_code',
+    prop: 'Task_id',
     label: '任务编码',
     isShow: false,
-    width: '',
+    width: '110',
     isSort: true,
     disabled: true
   },
   {
-    prop: 'user_code',
+    prop: 'User_code',
     label: '用户编号',
     isShow: false,
-    width: '',
+    width: '150',
     isSort: true,
     disabled: true
   },
   {
-    prop: 'equipment_code',
-    label: '水表编号',
+    prop: 'House_number',
+    label: '门牌号',
     isShow: false,
     width: '',
     isSort: true,
     disabled: true
   },
   {
-    prop: 'settled_traffic',
+    prop: 'Equipment_code',
+    label: '水表编号',
+    isShow: false,
+    width: '160',
+    isSort: true,
+    disabled: true
+  },
+  {
+    prop: 'Settled_traffic',
     label: '结算流量',
     isShow: false,
     width: '',
     isSort: true
   },
   {
-    prop: 'cumulative_traffic',
+    prop: 'Cumulative_traffic',
     label: '累计流量',
     isShow: false,
     width: '',
     isSort: true
   },
   {
-    prop: 'last_used',
+    prop: 'Last_used',
     label: '上月使用',
     isShow: false,
     width: '',
     isSort: true
   },
   {
-    prop: 'balance',
+    prop: 'Balance',
     label: '水表余额',
     isShow: false,
     width: '',
     isSort: true
   },
   {
-    prop: 'voltage',
+    prop: 'Voltage',
     label: '电压',
     isShow: false,
     width: '',
     isSort: false
   },
   {
-    prop: 'signal',
+    prop: 'Signal_strength',
     label: '信号强度',
     isShow: false,
     width: '',
     isSort: false
   },
   {
-    prop: 'consumption',
+    prop: 'Consumption',
     label: '电耗',
     isShow: false,
     width: '',
     isSort: true
   },
   {
-    prop: 'status',
+    prop: 'Status',
     label: '设备状态',
     isShow: false,
     width: '',
     isSort: false
   },
   {
-    prop: 'equipment_time',
+    prop: 'Equipment_time',
     label: '设备时间',
     isShow: false,
     width: '',
     isSort: false
   },
   {
-    prop: 'copy_time',
+    prop: 'Copy_time',
     label: '抄收时间',
     isShow: false,
     width: '',

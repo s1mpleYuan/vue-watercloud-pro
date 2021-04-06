@@ -165,7 +165,6 @@
 <script>
 import Header from '@/components/header';
 import { tableColumns } from './table';
-import { data1 } from './data';
 export default {
   components: {
     Header,
@@ -218,8 +217,7 @@ export default {
     // 表格数据预处理
     this.tableColumns = tableColumns; // 表格渲染对象
     this.tableCurrentColumns = this._.cloneDeep(tableColumns);
-    this.data = data1;
-    this.searchResArray = this._.cloneDeep(this.data);
+    this.queryWaterMeterCopyRecords();
     // 复选框选项预处理
     const checkItems = tableColumns.filter((item) => {
       return item.label != '序号' && item.label != '操作';
@@ -230,14 +228,31 @@ export default {
     this.screenCheckedList = this.checkOption;
   },
   methods: {
+    // 根据条件查询水表抄收数据
+    async queryWaterMeterCopyRecords() {
+      const params = {
+        condition: this.dataSearch,
+        fields: [],
+      };
+      const { data, code, msg } = await this.$http.post(
+        '/watermeter/queryWaterMeterCopyRecords',
+        this.$qs.stringify(params)
+      );
+      if (code == 1) {
+        this.data = data;
+        this.searchResArray = this._.cloneDeep(this.data);
+      } else if (code == -1) {
+        console.error(msg);
+      }
+    },
+    // 全选按钮change事件
     handleCheckAllChange(val) {
-      // 全选按钮change事件
       this.screenCheckedList = val ? this.checkOption : [];
       this.isIndeterminate = false;
       this.columnsShow(this.screenCheckedList);
     },
+    // 复选框change事件
     handleCheckedCitiesChange(value) {
-      // 复选框change事件
       let checkedCount = value.length;
       this.checkAll = checkedCount === this.checkOption.length;
       this.isIndeterminate =
@@ -254,30 +269,22 @@ export default {
         }
       }
     },
+    // 表格搜索
     searchTable() {
-      // 表格搜索
-      const searchResArray = this.data.filter((item) => {
-        for (const i in item) {
-          const sub = item[i];
-          if (
-            sub
-              .toString()
-              .toLowerCase()
-              .includes(this.dataSearch.toLowerCase())
-          ) {
-            return item;
-          }
-        }
-      });
-      if (searchResArray.length && searchResArray.length != 0) {
-        this.searchResArray = searchResArray;
-      } else {
-        //
-        this.$message({
-          message: '未检索到该条件的数据！',
-          type: 'error',
-        });
-      }
+      this.queryWaterMeterCopyRecords();
+      // console.log(this.dataSearch);
+      // const searchResArray = this.data.filter((item) => {
+      //   for (const i in item) {
+      //     const sub = item[i];
+      //     const cond = typeof sub == String ? sub : sub.toString();
+      //     if (cond.toLowerCase().includes(this.dataSearch.toLowerCase())) {
+      //       return item;
+      //     }
+      //   }
+      // });
+      // if (searchResArray.length && searchResArray.length != 0) {
+      //   this.searchResArray = searchResArray;
+      // }
     },
     resetTable() {
       // 重置表格数据为初始无条件状态
@@ -322,7 +329,6 @@ export default {
           return;
         }
         // 调取接口
-        
       });
       console.log(this.editForm, 'editForm');
       this.editDialogShow = false;
@@ -347,14 +353,14 @@ export default {
         }
       });
     },
-    getIsDisabled (key) {
+    getIsDisabled(key) {
       const columns = this.tableColumns;
       for (const i in columns) {
         if (key === columns[i].prop) {
           return columns[i].disabled || false;
         }
       }
-    }
+    },
   },
 };
 </script>

@@ -41,6 +41,12 @@ axios.interceptors.response.use(
         code: 1,
         msg
       };
+    } else if (code == 400) {
+      return {
+        data,
+        code: -1,
+        msg
+      };
     } else if (code == 401) {
       Vue.prototype.$alert(msg, '提示', {
         confirmButtonText: '确认',

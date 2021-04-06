@@ -1,9 +1,16 @@
 <template>
-  <div class="accountAuthorization-container">accountAuthorization</div>
+  <div class="accountAuthorization-container">
+  <Header></Header>
+  </div>
 </template>
 
 <script>
-export default {};
+import Header from '@/components/header';
+export default {
+  components: {
+    Header
+  }
+};
 </script>
 
-<style></style>
+<style lang="less"></style>

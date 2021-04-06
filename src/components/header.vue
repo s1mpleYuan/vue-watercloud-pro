@@ -184,11 +184,11 @@ export default {
       this.$router.go(-1);
     },
     async goAccountAuthorization() {
-      const res = await this.$http.get('/test');
-      console.log(res);
+      // const res = await this.$http.get('/test');
+      // console.log(res);
       
       // 进入配置账户权限
-      // this.$router.push('/accountAuthorization');
+      this.$router.push('/accountAuthorization');
     },
   },
 };
