@@ -22,7 +22,10 @@
             :index="item.index"
             v-if="item.invalid && !item.subMenus"
           >
-            <b :class="['fa', `fa-${item.icon}`]">
+            <b
+              :class="['fa', `fa-${item.icon}`]"
+              @click="item.url ? menuClick(item.url) : ''"
+            >
               {{ item.content }}
             </b>
           </el-menu-item>
@@ -31,7 +34,10 @@
             v-show="item.invalid && item.subMenus"
           >
             <template slot="title">
-              <b :class="['fa', `fa-${item.icon}`]">
+              <b
+                :class="['fa', `fa-${item.icon}`]"
+                @click="item.url ? menuClick(item.url) : ''"
+              >
                 {{ item.content }}
               </b>
             </template>
@@ -41,7 +47,9 @@
               :index="subMenuItem.index"
               style="text-align:center"
             >
-              <b>{{ subMenuItem.content }}</b>
+              <b @click="subMenuItem.url ? menuClick(subMenuItem.url) : ''">
+                {{ subMenuItem.content }}
+              </b>
             </el-menu-item>
           </el-submenu>
         </div>
@@ -169,7 +177,7 @@ export default {
       })
         .then(() => {
           // 确认退出 清除 Token
-          // localStorage.clear();
+          sessionStorage.clear();
           // 回退到 login 页面
           this.$router.push('/login');
           this.$message({
@@ -186,9 +194,12 @@ export default {
     async goAccountAuthorization() {
       // const res = await this.$http.get('/test');
       // console.log(res);
-      
+
       // 进入配置账户权限
       this.$router.push('/accountAuthorization');
+    },
+    menuClick(url) {
+      this.$router.push(url);
     },
   },
 };

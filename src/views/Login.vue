@@ -78,7 +78,8 @@ export default {
             message: msg,
             duration: 1000,
           });
-          this.$router.push('/home');
+          const exitPath = sessionStorage.getItem('exitPath');
+          this.$router.push(exitPath || '/home');
         } else {
           curLoading.close();
           this.$message.error({

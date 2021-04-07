@@ -3,11 +3,13 @@ const homeNavMenu = [
     invalid: true,
     index: '1',
     content: '主页',
+    url: '/home',
     icon: 'home',
     subMenus: [
       {
         invalid: true,
         index: '1-1',
+        url: '/earlyWarning',
         content: '数据预警',
       },
       {
@@ -62,10 +64,12 @@ const homeNavMenu = [
         invalid: true,
         index: '2-1',
         content: '列表数据',
+        url: '/dataPlatform/dataShow'
       },
       {
         invalid: true,
         index: '2-2',
+        url: '/chartManagement',
         content: '图表数据',
       }
     ]
@@ -74,7 +78,8 @@ const homeNavMenu = [
     invalid: true,
     index: '3',
     content: '数据日志',
-    icon: 'file'
+    icon: 'file',
+    url: 'warningRecord'
     // subMenus: []
   }
 ];

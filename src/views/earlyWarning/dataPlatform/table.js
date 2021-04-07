@@ -1,12 +1,21 @@
 const tableColumns = [
   {
-    prop: 'Serials',
+    prop: 'Record_id',
     label: '序号',
     isShow: false,
     width: '60',
     isSort: false,
     isIndex: true,
-    fixed: true
+    disabled: true
+  },
+  {
+    prop: '',
+    label: '操作',
+    isShow: false,
+    width: '200',
+    isSort: false,
+    isIndex: true,
+    isTools: true
   },
   {
     prop: 'Task_id',
@@ -109,16 +118,6 @@ const tableColumns = [
     isShow: false,
     width: '',
     isSort: true
-  },
-  {
-    prop: '',
-    label: '操作',
-    isShow: false,
-    width: '200',
-    isSort: false,
-    isIndex: true,
-    fixed: true,
-    isTools: true
   },
 ];
 

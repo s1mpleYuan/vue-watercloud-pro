@@ -53,6 +53,8 @@ axios.interceptors.response.use(
         callback: action => {
           if (action == 'confirm') {
             // 
+            const exitPath = router.app._route.fullPath;
+            window.sessionStorage.setItem('exitPath', exitPath);
            router.push('/login');
           } else {
             return response.data;

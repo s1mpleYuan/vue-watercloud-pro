@@ -98,28 +98,36 @@
           </div>
           <div class="screen-box">
             <div class="top-label">
-              <span class="title">筛选</span>
-              <el-button type="success" size="mini">确定</el-button>
+              <p>
+                筛选
+                <i class="el-icon-caret-bottom"></i>
+              </p>
+              <el-button type="primary" size="mini" @click="confirmScreen">
+                确认
+              </el-button>
+              <el-button type="success" size="mini" @click="resetScreen">
+                重置
+              </el-button>
             </div>
             <div class="screen-content">
               <el-checkbox
                 class="checkAll"
                 :indeterminate="isIndeterminate"
                 v-model="checkAll"
-                @change="handleCheckAllChange"
+                @change="checkAllChange"
               >
                 全选
               </el-checkbox>
               <el-checkbox-group
                 class="checkbox-list"
-                v-model="screenCheckedList"
-                @change="handleCheckedCitiesChange"
+                v-model="isCheckedofLabelList"
+                @change="checkedBoxChange"
               >
                 <el-checkbox
                   class="checkbox"
                   v-for="item in checkOption"
-                  :key="item"
-                  :label="item"
+                  :key="item.label"
+                  :label="item.label"
                 ></el-checkbox>
               </el-checkbox-group>
             </div>
@@ -139,11 +147,11 @@
       >
         <el-form-item
           class="edit-form-item"
-          v-for="(value, key, i) in editCurrentObj"
+          v-for="(value, key) in editCurrentObj"
           :key="key"
           :prop="key"
         >
-          <template slot="label">{{ screenCheckedList[i] }}</template>
+          <template slot="label">{{ getLabel(key) }}</template>
           <el-input
             class="edit-input"
             size="small"
@@ -191,11 +199,11 @@ export default {
       searchResArray: [],
       // 搜索内容
       dataSearch: '',
-      // 筛选复选框
-      screenCheckedList: [],
-      // 筛选结果
-      screenResult: '',
-      // 筛选复选框选项
+      // 筛选复选框中文显示数组
+      isCheckedofLabelList: [],
+      // 筛选结果(用于接口)
+      isCheckedofPropList: [],
+      // 筛选复选框所有选项
       checkOption: [],
       // 编辑的当前数据对象
       editCurrentObj: {},
@@ -217,22 +225,51 @@ export default {
     // 表格数据预处理
     this.tableColumns = tableColumns; // 表格渲染对象
     this.tableCurrentColumns = this._.cloneDeep(tableColumns);
-    this.queryWaterMeterCopyRecords();
     // 复选框选项预处理
-    const checkItems = tableColumns.filter((item) => {
-      return item.label != '序号' && item.label != '操作';
+    // 将表格渲染对象中的prop和label传给一个对象
+    this.tableColumns.forEach((item) => {
+      if (item.label != '序号' && item.label != '操作') {
+        this.checkOption.push({
+          prop: item.prop,
+          label: item.label,
+        });
+      }
     });
-    checkItems.forEach((item) => {
-      this.checkOption.push(item.label);
+    this.checkOption.forEach((item) => {
+      this.isCheckedofLabelList.push(item.label);
+      this.isCheckedofPropList.push(item.prop);
     });
-    this.screenCheckedList = this.checkOption;
+    this.queryWaterMeterCopyRecords();
   },
   methods: {
+    // 修改表格渲染对象实现某列隐藏
+    tableColumnsHide() {
+      if (this.isCheckedofPropList.length === 0) {
+        this.$message.warning('请至少选择一项数据！');
+        return;
+      }
+      this.tableCurrentColumns = [];
+      this.tableColumns.forEach((item) => {
+        if (item.label === '操作' || item.label === '序号') {
+          this.tableCurrentColumns.push(item);
+        } else {
+          this.isCheckedofPropList.filter((ele) => {
+            if (ele == item.prop) {
+              this.tableCurrentColumns.push(item);
+            }
+          });
+        }
+      });
+    },
     // 根据条件查询水表抄收数据
     async queryWaterMeterCopyRecords() {
+      let fields = [];
+      this.checkOption.forEach((item) => {
+        fields.push(item.prop);
+      });
       const params = {
         condition: this.dataSearch,
-        fields: [],
+        fields: fields,
       };
       const { data, code, msg } = await this.$http.post(
         '/watermeter/queryWaterMeterCopyRecords',
@@ -246,73 +283,79 @@ export default {
       }
     },
     // 全选按钮change事件
-    handleCheckAllChange(val) {
-      this.screenCheckedList = val ? this.checkOption : [];
+    checkAllChange(val) {
+      if (val) {
+        this.checkOption.forEach((item) => {
+          this.isCheckedofLabelList.push(item.label);
+          this.isCheckedofPropList.push(item.prop);
+        });
+      } else {
+        this.isCheckedofLabelList = [];
+        this.isCheckedofPropList = [];
+      }
       this.isIndeterminate = false;
-      this.columnsShow(this.screenCheckedList);
+      // this.columnsShow(this.screenCheckedList);
     },
     // 复选框change事件
-    handleCheckedCitiesChange(value) {
-      let checkedCount = value.length;
+    checkedBoxChange(isCheckedList) {
+      this.isCheckedofPropList = [];
+      isCheckedList.forEach((item) => {
+        this.checkOption.forEach((ele) => {
+          if (ele.label === item) {
+            this.isCheckedofPropList.push(ele.prop);
+          }
+        });
+      });
+      let checkedCount = isCheckedList.length;
       this.checkAll = checkedCount === this.checkOption.length;
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.checkOption.length;
-      this.columnsShow(this.screenCheckedList);
     },
-    columnsShow(curChekedList) {
-      // 复选框控制表格显示
-      for (const i in curChekedList) {
-        for (const j in this.tableColumns) {
-          if (curChekedList[i] == this.tableColumns[j].label) {
-            this.tableCurrentColumns.isShow = true;
-          }
-        }
-      }
+    // 筛选区域
+    // 筛选 确认按钮 事件
+    confirmScreen() {
+      this.tableColumnsHide();
     },
+    resetScreen() {
+      this.checkOption.forEach((item) => {
+        this.isCheckedofLabelList.push(item.label);
+        this.isCheckedofPropList.push(item.prop);
+      });
+      this.checkAll = true;
+      this.isIndeterminate = false;
+      this.tableColumnsHide();
+    },
+    columnsShow() {},
     // 表格搜索
     searchTable() {
       this.queryWaterMeterCopyRecords();
-      // console.log(this.dataSearch);
-      // const searchResArray = this.data.filter((item) => {
-      //   for (const i in item) {
-      //     const sub = item[i];
-      //     const cond = typeof sub == String ? sub : sub.toString();
-      //     if (cond.toLowerCase().includes(this.dataSearch.toLowerCase())) {
-      //       return item;
-      //     }
-      //   }
-      // });
-      // if (searchResArray.length && searchResArray.length != 0) {
-      //   this.searchResArray = searchResArray;
-      // }
     },
+    // 重置表格数据为初始无条件状态
     resetTable() {
-      // 重置表格数据为初始无条件状态
       this.dataSearch = '';
       this.searchResArray = this._.cloneDeep(this.data);
       this.screenCheckedList = this._.cloneDeep(this.checkOption);
     },
     // 表格行工具栏
+    // 编辑
     handleEdit(index, row) {
-      // 编辑
+      // console.log(this.isCheckedofLabelList);
       this.editDialogShow = true;
       this.editCurrentObj = this._.cloneDeep(row);
-      delete this.editCurrentObj.serials;
+      delete this.editCurrentObj.Serials;
+      console.log(this.editCurrentObj);
       this.editForm = this._.cloneDeep(this.editCurrentObj);
       this.setRules();
-      console.log(this.editRules, 'editRules');
-      console.log(this.editForm, 'this.editForm');
+      // console.log(this.editRules, 'editRules');
+      // console.log(this.editForm, 'this.editForm');
     },
-    handleDelete() {
-      // 删除
-    },
+    // 删除
+    handleDelete() {},
     // 分页事件方法
-    handleSizeChange() {
-      // 每页条数变化事件
-    },
-    handleCurrentChange() {
-      // 当前页码变化事件
-    },
+    // 每页条数变化事件
+    handleSizeChange() {},
+    // 当前页码变化事件
+    handleCurrentChange() {},
     // 编辑Dialog相关事件方法
     closeEditDialog() {
       // 关闭弹窗
@@ -322,22 +365,32 @@ export default {
       // 清空dialog中的当前编辑对象
       this.editCurrentObj = {};
     },
+    // 获取编辑表单的label
+    getLabel(key) {
+      // console.log(key);
+      this.checkOption.forEach((item) => {
+        if (key == item.prop) {
+          // console.log(item.label);
+          return item.label;
+        }
+      });
+    },
+    // 提交编辑
     submitEdit() {
-      // 提交编辑
       this.$refs.editRef.validate((val) => {
         if (!val) {
           return;
         }
         // 调取接口
       });
-      console.log(this.editForm, 'editForm');
+      // console.log(this.editForm, 'editForm');
       this.editDialogShow = false;
     },
+    // 设置编辑表单的校验规则
     setRules() {
-      // 设置编辑表单的校验规则
       // const requiredTrueList = ['task_code', 'user_code', 'equipment_code'];
-      this.screenCheckedList.forEach((item) => {
-        const columns = this.tableColumns;
+      this.isCheckedofLabelList.forEach((item) => {
+        const columns = tableColumns;
         for (const i in columns) {
           //
           if (item === columns[i].label) {
@@ -353,6 +406,7 @@ export default {
         }
       });
     },
+    // 设置编辑Dialog中的表单的某些字段输入是禁止输入的
     getIsDisabled(key) {
       const columns = this.tableColumns;
       for (const i in columns) {
@@ -454,14 +508,22 @@ export default {
           box-sizing: border-box;
           .top-label {
             height: 40px;
-            .title {
-              width: 50px;
-              padding-left: 15px;
-              font-size: 20px;
+            padding-left: 10px;
+            p {
+              font-size: 18px;
+              height: 100%;
               float: left;
+              width: 70px;
+              margin-right: 15px;
             }
             .el-button {
-              margin-left: 120px;
+              width: 80px;
+              float: left;
+              margin-left: 5px;
+              margin-top: 16px;
+            }
+            .el-button::before {
+              font-size: 16px;
             }
           }
           .screen-content {

@@ -1,12 +1,12 @@
 
 const enterprise = [
   {
-    name: '数据监控',
+    name: '数据预警',
     content: `
       <div style="margin: 100px 0 0">
-        <span style="font-size: 21px;margin-bottom: 10px;display: inline-block">数据监控平台简介</span><br/>
+        <span style="font-size: 21px;margin-bottom: 10px;display: inline-block">数据预警平台简介</span><br/>
         <span></span><br/>
-        <el-button type="text" style="margin-top: 50px;display: inline-block">进入数据监控平台<i class="el-icon-right"></i></el-button>
+        <el-button type="text" style="margin-top: 50px;display: inline-block">进入数据预警平台<i class="el-icon-right"></i></el-button>
       </div>
     `,
     row: 1,
