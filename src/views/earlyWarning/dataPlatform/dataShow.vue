@@ -137,26 +137,30 @@
       </div>
     </div>
     <!-- dialog -->
-    <el-dialog title="提示" :visible.sync="editDialogShow" width="45%">
+    <el-dialog title="编辑" :visible.sync="editDialogShow" width="45%">
       <el-form
         class="edit-form"
         ref="editRef"
         :model="editForm"
-        label-width="80px"
+        label-width="100px"
         :rules="editRules"
       >
         <el-form-item
           class="edit-form-item"
-          v-for="(value, key) in editCurrentObj"
+          v-for="(item, key) in editCurrentObj"
           :key="key"
-          :prop="key"
+          :prop="item.prop"
         >
-          <template slot="label">{{ getLabel(key) }}</template>
+          <span slot="label">{{ editFormLabel(item.prop) }}</span>
           <el-input
             class="edit-input"
             size="small"
-            v-model="editForm[key]"
-            :disabled="getIsDisabled(key)"
+            type="text"
+            v-model="editForm[item.prop]"
+            :inline-message="true"
+            :status-icon="true"
+            :hide-required-asterisk="true"
+            :disabled="getIsDisabled(item.prop)"
           ></el-input>
         </el-form-item>
       </el-form>
@@ -221,6 +225,7 @@ export default {
       },
     };
   },
+  computed: {},
   created() {
     // 表格数据预处理
     this.tableColumns = tableColumns; // 表格渲染对象
@@ -242,6 +247,11 @@ export default {
     this.queryWaterMeterCopyRecords();
   },
   methods: {
+    // 获取编辑表单的label
+    editFormLabel(key) {
+      const cur = this.tableColumns.filter((item) => item.prop == key);
+      return cur[0].label;
+    },
     // 修改表格渲染对象实现某列隐藏
     tableColumnsHide() {
       if (this.isCheckedofPropList.length === 0) {
@@ -277,6 +287,7 @@ export default {
       );
       if (code == 1) {
         this.data = data;
+        console.log(data);
         this.searchResArray = this._.cloneDeep(this.data);
       } else if (code == -1) {
         console.error(msg);
@@ -333,21 +344,17 @@ export default {
     // 重置表格数据为初始无条件状态
     resetTable() {
       this.dataSearch = '';
-      this.searchResArray = this._.cloneDeep(this.data);
-      this.screenCheckedList = this._.cloneDeep(this.checkOption);
+      this.queryWaterMeterCopyRecords();
     },
     // 表格行工具栏
     // 编辑
     handleEdit(index, row) {
-      // console.log(this.isCheckedofLabelList);
-      this.editDialogShow = true;
-      this.editCurrentObj = this._.cloneDeep(row);
-      delete this.editCurrentObj.Serials;
-      console.log(this.editCurrentObj);
-      this.editForm = this._.cloneDeep(this.editCurrentObj);
       this.setRules();
-      // console.log(this.editRules, 'editRules');
-      // console.log(this.editForm, 'this.editForm');
+      this.editCurrentObj = this.tableColumns.filter(
+        (item) => item.label !== '操作'
+      );
+      this.editForm = this._.cloneDeep(row);
+      this.editDialogShow = true;
     },
     // 删除
     handleDelete() {},
@@ -365,16 +372,6 @@ export default {
       // 清空dialog中的当前编辑对象
       this.editCurrentObj = {};
     },
-    // 获取编辑表单的label
-    getLabel(key) {
-      // console.log(key);
-      this.checkOption.forEach((item) => {
-        if (key == item.prop) {
-          // console.log(item.label);
-          return item.label;
-        }
-      });
-    },
     // 提交编辑
     submitEdit() {
       this.$refs.editRef.validate((val) => {
@@ -388,21 +385,16 @@ export default {
     },
     // 设置编辑表单的校验规则
     setRules() {
-      // const requiredTrueList = ['task_code', 'user_code', 'equipment_code'];
-      this.isCheckedofLabelList.forEach((item) => {
-        const columns = tableColumns;
-        for (const i in columns) {
-          //
-          if (item === columns[i].label) {
-            const { label, prop } = columns[i];
-            this.editRules[prop] = [
-              {
-                required: true,
-                message: `${label}不能为空！`,
-                trigger: 'blur',
-              },
-            ];
-          }
+      this.tableColumns.forEach((item) => {
+        if (!item.disabled && item.label !== '操作') {
+          const { label, prop } = item;
+          this.editRules[prop] = [
+            {
+              required: true,
+              message: `${label}不能为空`,
+              trigger: 'blur',
+            },
+          ];
         }
       });
     },

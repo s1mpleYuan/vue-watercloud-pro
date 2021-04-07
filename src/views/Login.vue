@@ -44,8 +44,8 @@ export default {
       avatar:
         'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
       loginForm: {
-        loginStr: '110011',
-        pwd: '123456',
+        loginStr: '20172203222',
+        pwd: '19981222',
       },
       user: {
         username: 'admin01',
@@ -84,7 +84,7 @@ export default {
           curLoading.close();
           this.$message.error({
             message: msg,
-            duration: 1000,
+            duration: 2000,
           });
         }
       }, 1500);

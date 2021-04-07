@@ -41,7 +41,13 @@ axios.interceptors.response.use(
         code: 1,
         msg
       };
-    } else if (code == 400) {
+    } else if (code == 400 || code == 404) {
+      /* 
+        400 请求地址不存在或参数错误
+        401
+        402
+        403 访问失败
+      */
       return {
         data,
         code: -1,

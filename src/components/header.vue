@@ -59,13 +59,18 @@
           <el-popover
             placement="bottom"
             title="当前登录账户"
-            width="150"
+            width="250"
             trigger="hover"
           >
             <template>
               <span class="user-info">
-                <i class="fa fa-user"></i>
-                {{ userInfo.username }}
+                <b>
+                  <i class="fa fa-user"></i>
+                  用户：
+                </b>
+                <p>
+                  {{ userInfo.username }}
+                </p>
                 <el-button
                   type="text"
                   size="small"
@@ -74,12 +79,18 @@
                 ></el-button>
               </span>
               <span class="user-info">
-                <i class="fa fa-id-card"></i>
-                {{ userInfo.account }}
+                <b>
+                  <i class="fa fa-id-card"></i>
+                  账号：
+                </b>
+                <p>{{ userInfo.account }}</p>
               </span>
               <span class="user-info">
-                <i class="fa fa-bookmark"></i>
-                {{ userInfo.code }}
+                <b>
+                  <i class="fa fa-bookmark"></i>
+                  企业：
+                </b>
+                <p>{{ userInfo.en_name }}</p>
               </span>
             </template>
             <el-button
@@ -318,12 +329,24 @@ export default {
   width: 100%;
   display: block;
   margin-top: 10px;
-  i {
-    width: 30px;
-    padding: 0 2px;
+  box-sizing: border-box;
+  font-size: 14px;
+  b {
+    width: 25%;
+    text-align: center;
+    i {
+      width: 25px;
+    }
   }
-  .edit-button {
-    margin-left: 5px;
+  p {
+    margin: 5px 0;
+    line-height: 20px;
+    text-align: center;
+    width: 50%;
+    display: inline-block;
+    .edit-button {
+      padding: 0;
+    }
   }
 }
 </style>

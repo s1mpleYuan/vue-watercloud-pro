@@ -52,6 +52,7 @@ const tableColumns = [
   {
     prop: 'Settled_traffic',
     label: '结算流量',
+    inputType: 'number',
     isShow: false,
     width: '',
     isSort: true
@@ -109,14 +110,14 @@ const tableColumns = [
     prop: 'Equipment_time',
     label: '设备时间',
     isShow: false,
-    width: '',
+    width: '180',
     isSort: false
   },
   {
     prop: 'Copy_time',
     label: '抄收时间',
     isShow: false,
-    width: '',
+    width: '180',
     isSort: true
   },
 ];

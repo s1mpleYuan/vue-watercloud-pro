@@ -3,16 +3,16 @@
     <Header></Header>
     <el-container class="main">
       <div class="left-box">
-        <Property v-if="location"></Property>
-        <Enterprise v-else></Enterprise>
+        <Enterprise v-if="location"></Enterprise>
+        <Property v-else></Property>
       </div>
-      <div class="right-box">
+      <div class="right-box" :style="{height: userInfo.auth == 0? '85%' : '100%'}">
         <Weather></Weather>
-        <div class="user-setting-box">
-          <el-button v-if="location" class="switch" type="primary" icon="el-icon-share" @click="location=!location" round>
+        <div class="user-setting-box" v-show="userInfo.auth == 0">
+          <el-button v-if="!location" class="switch" type="primary" icon="el-icon-share" @click="location=!location" round>
             数据管理平台
           </el-button>
-          <el-button v-else class="switch" type="warning" icon="el-icon-share" @click="location=!location" round>
+          <el-button v-else-if="location" class="switch" type="warning" icon="el-icon-share" @click="location=!location" round>
             下级区域管理
           </el-button>
         </div>
@@ -37,10 +37,15 @@ export default {
   },
   data() {
     return {
-      location: false, // 页面位置，true为企业管理页面, false 为物业管理页面位置
+      location: true, // 页面位置，true为企业管理页面, false 为物业管理页面
+      userInfo: {}
     };
   },
   created() {
+    this.userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    this.location = this.userInfo.auth === 0;
+    console.log(this.location, 'this.location');
+    // console.log(this.userInfo);
   },
   mouted() {},
   methods: {
@@ -68,8 +73,8 @@ export default {
     }
     .right-box {
       width: 450px;
-      height: 85%;
       padding: 10px;
+      box-sizing: border-box;
       .user-setting-box {
         height: 15%;
         width: 100%;
