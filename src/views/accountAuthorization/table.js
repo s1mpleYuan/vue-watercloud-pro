@@ -27,13 +27,13 @@ const tableColumns = [
   {
     prop: 'auth',
     label: '权限',
-    inputType: 'switch',
-    width: '60',
+    inputType: 'radio',
+    width: '',
     edit: false
   },
   {
     prop: 'enabled',
-    label: '是否被禁用',
+    label: '是否禁用',
     inputType: 'switch',
     edit: false
   },

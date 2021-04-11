@@ -67,6 +67,12 @@ axios.interceptors.response.use(
           }
         }
       });
+    } else if(code == 500) {
+      return {
+        data,
+        code: 0,
+        msg
+      };
     }
   }
 );

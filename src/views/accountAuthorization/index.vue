@@ -21,7 +21,31 @@
             :prop="item.prop"
             :label="item.label"
             :width="item.width"
-          ></el-table-column>
+          >
+            <template slot-scope="scope">
+              <span v-if="item.prop == 'auth'">
+                <span v-if="scope.row[item.prop] == '1'">
+                  <el-tag type="primary" effect="dark">普通账户</el-tag>
+                </span>
+                <span v-else-if="scope.row[item.prop] == '0'">
+                  <el-tag type="success" effect="dark">管理员账户</el-tag>
+                </span>
+              </span>
+              <span v-else-if="item.prop == 'enabled'">
+                <b v-if="scope.row[item.prop] == '0'" style="color:#67C23A">
+                  启用
+                </b>
+                <b
+                  v-else-if="scope.row[item.prop] == '1'"
+                  style="color:#F56C6C"
+                >
+                  禁用
+                </b>
+                <b></b>
+              </span>
+              <span v-else>{{ scope.row[item.prop] }}</span>
+            </template>
+          </el-table-column>
           <el-table-column align="center" type="expand">
             <template>
               <el-form class="table-expand" label-position="left" inline>
@@ -30,19 +54,47 @@
                   :key="i"
                   :label="formItem.label"
                 >
-                  <span>{{ curRowForm[formItem.prop] }}</span>
+                  <span v-if="formItem.prop == 'auth'">
+                    <span v-if="curRowForm[formItem.prop] == '1'">
+                      <b style="color:#409EFF">普通账户</b>
+                    </span>
+                    <span v-else-if="curRowForm[formItem.prop] == '0'">
+                      <b style="color:#67C23A">管理员账户</b>
+                    </span>
+                  </span>
+                  <span v-else-if="formItem.prop == 'enabled'">
+                    <b
+                      v-if="curRowForm[formItem.prop] == '1'"
+                      style="color:#F56C6C"
+                    >
+                      禁用
+                    </b>
+                    <b
+                      v-else-if="curRowForm[formItem.prop] == '0'"
+                      style="color:#67C23A"
+                    >
+                      启用
+                    </b>
+                  </span>
+                  <span v-else>{{ curRowForm[formItem.prop] }}</span>
                 </el-form-item>
-                <el-form-item class="edit-form-buttons" v-if="isEdit">
-                  <el-button size="mini" @click="cancelEdit">取消</el-button>
-                  <el-button type="primary" size="mini">提交</el-button>
-                </el-form-item>
-                <el-form-item class="edit-form-buttons" v-else-if="!isEdit">
-                  <el-button size="mini" type="warning" @click="startEdit">
+                <el-form-item class="edit-form-buttons">
+                  <el-button size="mini" type="warning" @click="editDalogShow">
                     编辑
                   </el-button>
-                  <el-button size="mini" type="danger" @click="deleteUser">
-                    删除
-                  </el-button>
+
+                  <el-popconfirm
+                    confirm-button-text="确认"
+                    cancel-button-text="取消"
+                    icon="el-icon-info"
+                    icon-color="red"
+                    title="确定删除该用户吗？"
+                    @confirm="deleteUserInfo"
+                  >
+                    <el-button slot="reference" size="mini" type="danger">
+                      删除
+                    </el-button>
+                  </el-popconfirm>
                 </el-form-item>
               </el-form>
             </template>
@@ -69,18 +121,31 @@
             v-model="editForm[item.prop]"
             size="mini"
           ></el-input>
-          <el-switch
-            v-if="item.inputType == 'switch'"
-            v-model="editForm[item.prop]"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-          ></el-switch>
+          <span v-if="item.inputType == 'switch'">
+            <el-switch
+              v-model="editForm[item.prop]"
+              active-color="#13ce66"
+              :active-value="0"
+              :inactive-value="1"
+              inactive-color="#ff4949"
+            ></el-switch>
+            <b v-if="editForm[item.prop] == '1'">禁用</b>
+            <b v-else-if="editForm[item.prop] == '0'">启用</b>
+          </span>
+          <div v-if="item.inputType == 'radio'">
+            <el-radio v-model="editForm[item.prop]" size="mini" :label="0">
+              管理员账户
+            </el-radio>
+            <el-radio v-model="editForm[item.prop]" size="mini" :label="1">
+              普通账户
+            </el-radio>
+          </div>
           <span v-if="!item.inputType">{{ editForm[item.prop] }}</span>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="mini" @click="dialogShow = false">取 消</el-button>
-        <el-button size="mini" type="primary" @click="dialogShow = false">
+        <el-button size="mini" type="primary" @click="editUserInfo">
           确 定
         </el-button>
       </span>
@@ -97,18 +162,19 @@ export default {
   },
   data() {
     return {
+      //
       tableColumns: [],
       expands: [],
       tableData: [],
       userInfo: {},
       curRowForm: {},
       editForm: {},
-      isEdit: false,
       getRowKey(row) {
-        return row.user_serials;
+        return row.user_serials || '0';
       },
       dialogShow: false,
       editRules: {},
+      popoverShow: false,
     };
   },
   created() {
@@ -118,6 +184,7 @@ export default {
     this.getOtherUserInfoList();
   },
   methods: {
+    // 获取其他所有账户信息(只获取该账户所属公司下的账户)
     async getOtherUserInfoList() {
       const params = {
         code: this.userInfo.code,
@@ -129,26 +196,57 @@ export default {
       );
       if (code == 1) {
         // console.log(data, 'data');
-        this.tableData = data;
+        this.$nextTick(() => {
+          this.tableData = data;
+          this.expands = [];
+        });
       }
     },
+    // 展开行切换只允许保留一行展开
     expandChange(row, expandedRows) {
       this.expands = [];
       if (expandedRows.length > 0) {
         row ? this.expands.push(row.user_serials) : '';
       }
     },
+    // 点击行展开
     clickRow(row) {
       this.$refs.tableRef.toggleRowExpansion(row);
-      this.curRowForm = this._.cloneDeep(row);
+      this.curRowForm = row;
     },
-    cancelEdit() {},
-    startEdit() {
+    // 编辑弹窗的显示
+    editDalogShow() {
       this.dialogShow = true;
       this.editForm = this._.cloneDeep(this.curRowForm);
       this.setRules();
     },
-    deleteUser() {},
+    // 编辑弹窗编辑按钮
+    async editUserInfo() {
+      const userInfo = this._.cloneDeep(this.editForm);
+      userInfo.enabled = this.editForm.enabled ? 1 : 0;
+      const { code, msg } = await this.$http.put(
+        '/users/editUserInfo',
+        this.$qs.stringify({ userInfo })
+      );
+      if (code == 1) {
+        this.$message({
+          type: 'success',
+          message: msg,
+          duration: 1500,
+        });
+        this.getOtherUserInfoList();
+        this.dialogShow = false;
+      } else {
+        this.$message({
+          type: 'error',
+          message: msg,
+          duration: 1500,
+        });
+      }
+    },
+    // 删除用户
+    deleteUserInfo() {},
+    // 设置弹窗dialog中form表单的校验规则
     setRules() {
       this.tableColumns.forEach((item) => {
         if (item.required) {
@@ -216,6 +314,9 @@ export default {
             height: 50px;
             padding-top: 20px;
             width: 100%;
+            .el-button {
+              margin-right: 15px;
+            }
           }
         }
       }
@@ -242,6 +343,9 @@ export default {
       }
       .el-form-item__content {
         line-height: 50px;
+      }
+      .el-switch {
+        margin-right: 10px;
       }
     }
   }
