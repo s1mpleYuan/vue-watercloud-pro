@@ -116,6 +116,7 @@
           设置
         </el-button>
         <el-button
+          v-show="userInfo.auth === 0"
           type="success"
           size="small"
           @click="goAccountAuthorization"

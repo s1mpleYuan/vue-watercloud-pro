@@ -7,7 +7,12 @@ import axios from 'axios';
 import _ from 'lodash';
 import 'font-awesome/css/font-awesome.css';
 import Qs from 'qs';
+import './assests/css/theme.css';
+// import { getThemeClass } from './utils/theme';
 
+
+// Vue.prototype.$theme = 'primary';
+// Vue.prototype.$getThemeClass = getThemeClass;
 Vue.prototype.$qs = Qs;
 Vue.prototype._ = _;
 // import Echarts from './plugins/echarts';
@@ -35,7 +40,7 @@ axios.interceptors.request.use(config => {
 axios.interceptors.response.use(
   response => {
     const { data, code, msg } = response.data;
-    if(code == 200) {
+    if (code == 200 || code == 201 || code == 202 || code == 203) {
       return {
         data,
         code: 1,
@@ -61,13 +66,13 @@ axios.interceptors.response.use(
             // 
             const exitPath = router.app._route.fullPath;
             window.sessionStorage.setItem('exitPath', exitPath);
-           router.push('/login');
+            router.push('/login');
           } else {
             return response.data;
           }
         }
       });
-    } else if(code == 500) {
+    } else if (code == 500) {
       return {
         data,
         code: 0,

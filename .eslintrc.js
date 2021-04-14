@@ -13,7 +13,6 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-var': "error",
     // "vue/no-v-html": "off",
     'max-params': ["error", 3],
     'eqeqeq': 0, // 允许使用非全等

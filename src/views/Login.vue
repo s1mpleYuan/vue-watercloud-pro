@@ -44,7 +44,7 @@ export default {
       avatar:
         'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
       loginForm: {
-        loginStr: 'admin',
+        loginStr: '12345678',
         pwd: '19981222',
       },
       user: {

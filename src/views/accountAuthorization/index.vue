@@ -2,7 +2,72 @@
   <div class="accountAuthorization-container">
     <Header></Header>
     <div class="accountAuthorization-box">
-      <div class="accountAuthorization-table-header"></div>
+      <div class="accountAuthorization-table-header">
+        <div class="accountAuthorization-header-screen-box">
+          <el-form inline>
+            <el-form-item :model="form" label="企业代码">
+              <el-select
+                v-model="form.code"
+                placeholder="企业代码"
+                size="small"
+                v-if="code == '000'"
+                @change="changeSelect('code', form.code)"
+              >
+                <el-option
+                  v-for="item in codeSelectOptions"
+                  :key="item.code"
+                  :label="`${item.name}---[${item.code}]`"
+                  :value="item.code"
+                ></el-option>
+              </el-select>
+              <el-input v-else v-model="code" size="small" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="账户权限">
+              <el-select
+                v-model="form.auth"
+                placeholder="账户权限"
+                size="small"
+                @change="changeSelect('auth', form.auth)"
+              >
+                <el-option label="管理员账户" :value="0"></el-option>
+                <el-option label="普通账户" :value="1"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="禁用状态">
+              <el-select
+                v-model="form.enabled"
+                placeholder="禁用状态"
+                size="small"
+                @change="changeSelect('enabled', form.enabled)"
+              >
+                <el-option label="启用" :value="0"></el-option>
+                <el-option label="禁用" :value="1"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                type="success"
+                size="small"
+                class="el-icon-refresh"
+                round
+                @click="resetSelect"
+              >
+                重置
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="accountAuthorization-header-buttons-box">
+          <el-button
+            type="primary"
+            class="el-icon-plus"
+            size="small"
+            @click="addDialogShow = true"
+          >
+            添加账户
+          </el-button>
+        </div>
+      </div>
       <div class="accountAuthorization-table-box">
         <el-table
           ref="tableRef"
@@ -88,6 +153,7 @@
                     cancel-button-text="取消"
                     icon="el-icon-info"
                     icon-color="red"
+                    placement="top"
                     title="确定删除该用户吗？"
                     @confirm="deleteUserInfo"
                   >
@@ -103,7 +169,7 @@
         <el-pagination class="accountAuthorization-pagination"></el-pagination>
       </div>
     </div>
-    <el-dialog title="修改其他用户信息" :visible.sync="dialogShow">
+    <el-dialog title="修改账户" :visible.sync="editDialogShow">
       <el-form
         :model="editForm"
         class="edit-dialog-form"
@@ -144,8 +210,87 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogShow = false">取 消</el-button>
+        <el-button size="mini" @click="editDialogShow = false">取 消</el-button>
         <el-button size="mini" type="primary" @click="editUserInfo">
+          确 定
+        </el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="添加账户"
+      width="650px"
+      :visible.sync="addDialogShow"
+      @close="addDialogClose"
+    >
+      <el-form
+        ref="addFormRef"
+        class="add-dialog-form"
+        :model="addForm"
+        :rules="addFormRules"
+        inline-message
+        status-icon
+      >
+        <el-form-item label="用户名" prop="username">
+          <el-input
+            size="small"
+            v-model="addForm.username"
+            placeholder="请输入用户名"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="账号" prop="account">
+          <el-input
+            size="small"
+            v-model="addForm.account"
+            placeholder="请输入账户"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="pwd">
+          <el-input
+            type="password"
+            size="small"
+            v-model="addForm.pwd"
+            placeholder="请输入密码"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="checkPwd">
+          <el-input
+            type="password"
+            size="small"
+            v-model="addForm.checkPwd"
+            placeholder="请再输入一次密码"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="所属企业" prop="code">
+          <el-select
+            size="small"
+            placeholder="请选择所属企业"
+            v-model="addForm.code"
+            v-if="code === '000'"
+          >
+            <el-option
+              v-for="item in codeSelectOptions"
+              :key="item.code"
+              :label="`${item.name}---[${item.code}]`"
+              :value="item.code"
+            ></el-option>
+          </el-select>
+          <el-input
+            v-else
+            v-model="addForm.code"
+            size="small"
+            disabled
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="账户权限" prop="auth">
+          <el-radio-group v-model="addForm.auth">
+            <el-radio :label="0">管理员账户</el-radio>
+            <el-radio :label="1">普通用户</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <span slot="footer">
+        <el-button size="mini" @click="addDialogShow = false">取 消</el-button>
+        <el-button size="mini" type="primary" @click="addUser">
           确 定
         </el-button>
       </span>
@@ -161,8 +306,29 @@ export default {
     Header,
   },
   data() {
+    var validatePass = (rule, value, cb) => {
+      if (value === '') {
+        cb(new Error('请再次输入密码'));
+      } else if (value !== this.addForm.pwd) {
+        cb(new Error('两次输入密码不一致!'));
+      } else {
+        cb();
+      }
+    };
     return {
       //
+      // 顶部select change 事件筛选数组
+      queryArray: [{
+        key: "code",
+        value: ""
+      },{
+        key: "auth",
+        value: ""
+      },{
+        key:"enabled",
+        value: ""
+      }],
+      code: '',
       tableColumns: [],
       expands: [],
       tableData: [],
@@ -172,33 +338,135 @@ export default {
       getRowKey(row) {
         return row.user_serials || '0';
       },
-      dialogShow: false,
+      // dialog show status
+      editDialogShow: false,
+      addDialogShow: false,
       editRules: {},
       popoverShow: false,
+      // 企业代码选项数组
+      codeSelectOptions: [],
+      // header form
+      form: {},
+      addForm: {},
+      confirmPwd: '',
+      // 添加用户dialog form的检验规则
+      addFormRules: {
+        username: [
+          { required: true, message: '请输入用户名！', trigger: 'blur' },
+          {
+            min: 3,
+            max: 10,
+            message: '用户名的长度应在3到10个字符之间',
+            trigger: 'blur',
+          },
+        ],
+        account: [
+          { required: true, message: '请输入账户！', trigger: 'blur' },
+          {
+            min: 5,
+            max: 12,
+            message: '用户名的长度应在5到12个字符之间',
+            trigger: 'blur',
+          },
+        ],
+        pwd: [
+          { required: true, message: '请输入密码！', trigger: 'blur' },
+          {
+            min: 6,
+            max: 12,
+            message: '密码的长度应在6到12个字符之间',
+            trigger: 'blur',
+          },
+        ],
+        checkPwd: [{ validator: validatePass, trigger: 'blur' }],
+        code: [
+          { required: true, message: '请选择所属企业！', trigger: 'change' },
+        ],
+        auth: [
+          { required: true, message: '请选择账户权限', trigger: 'change' },
+        ],
+      },
     };
   },
   created() {
+    const { code } = JSON.parse(localStorage.getItem('userInfo'));
+    if (code === '000') {
+      this.queryAllEnterpriseCode();
+      this.code = code;
+    } else {
+      this.code = code;
+      this.addForm.code = code;
+    }
     this.tableColumns = tableColumns;
 
     this.userInfo = JSON.parse(localStorage.getItem('userInfo'));
     this.getOtherUserInfoList();
   },
   methods: {
+    // select 选择框change筛选
+    changeSelect(condition, value) {
+      this.queryArray.filter((item) => {
+        item.value = item.key === condition ? value : item.value;
+      });
+      this.queryUserInfoByCondition();
+    },
+    async queryUserInfoByCondition() {
+      const params = {
+        code: this.code,
+        auth: JSON.parse(localStorage.getItem('userInfo')).auth,
+        conditions:this.queryArray
+      };
+      const { data, code, msg } = await this.$http.post(
+        '/users/queryUserInfoByConditions',
+        this.$qs.stringify(params)
+      );
+      if (code === 1) {
+        this.$nextTick(() => {
+          this.tableData = data;
+        });
+      } else {
+        this.$message({
+          type: 'error',
+          message: msg,
+        });
+      }
+    },
+    // 重置select 
+    resetSelect (){
+      this.queryArray.forEach(item => {
+        item.value = "";
+      });
+      this.queryUserInfoByCondition();
+      this.form = {};
+      this.form.code = this.code == '000' ? '':this.code;
+    },
     // 获取其他所有账户信息(只获取该账户所属公司下的账户)
     async getOtherUserInfoList() {
       const params = {
         code: this.userInfo.code,
         auth: this.userInfo.auth,
       };
-      const { data, code } = await this.$http.post(
+      const { data, code, msg } = await this.$http.post(
         '/users/queryOtherUsersInfo',
         this.$qs.stringify(params)
       );
       if (code == 1) {
-        // console.log(data, 'data');
         this.$nextTick(() => {
           this.tableData = data;
           this.expands = [];
+        });
+        if (data.length == 0) {
+          this.$message({
+            type: 'warning',
+            message: msg,
+            duration: 4000,
+          });
+        }
+      } else {
+        this.$message({
+          type: 'error',
+          message: msg,
+          duration: 2000,
         });
       }
     },
@@ -216,7 +484,7 @@ export default {
     },
     // 编辑弹窗的显示
     editDalogShow() {
-      this.dialogShow = true;
+      this.editDialogShow = true;
       this.editForm = this._.cloneDeep(this.curRowForm);
       this.setRules();
     },
@@ -245,7 +513,26 @@ export default {
       }
     },
     // 删除用户
-    deleteUserInfo() {},
+    async deleteUserInfo() {
+      const { account } = this.curRowForm;
+      const { code, msg } = await this.$http.delete(
+        `/users/deleteUserInfo?account=${account}`
+      );
+      if (code === 1) {
+        this.$message({
+          type: 'success',
+          message: msg,
+          duration: 2000,
+        });
+        this.getOtherUserInfoList();
+      } else {
+        this.$message({
+          type: 'error',
+          message: msg,
+          duration: 2000,
+        });
+      }
+    },
     // 设置弹窗dialog中form表单的校验规则
     setRules() {
       this.tableColumns.forEach((item) => {
@@ -260,6 +547,52 @@ export default {
         }
       });
     },
+    async queryAllEnterpriseCode() {
+      const { data, code, msg } = await this.$http.get(
+        '/enterprises/queryAllEnterpriseCode'
+      );
+      if (code == 1) {
+        this.$nextTick(() => {
+          this.codeSelectOptions = data;
+        });
+      } else {
+        console.log(msg);
+      }
+    },
+    addDialogClose() {
+      // 添加弹窗的关闭回调
+      this.addForm = {
+        code: this.code,
+      };
+      this.addForm = this.code === '000' ? {} : { code: this.code };
+      this.$refs.addFormRef.resetFields();
+    },
+    addUser() {
+      this.$refs.addFormRef.validate(async (valid) => {
+        if (!valid) {
+          return;
+        } else {
+          const { code, msg } = await this.$http.put(
+            '/users/createUserInfo',
+            this.$qs.stringify({ userInfo: this.addForm })
+          );
+          if (code === 1) {
+            this.$message({
+              type: 'success',
+              message: msg,
+            });
+            this.addDialogShow = false;
+            this.getOtherUserInfoList();
+          } else {
+            this.$message({
+              type: 'error',
+              message: msg,
+              duration: 2000,
+            });
+          }
+        }
+      });
+    },
   },
 };
 </script>
@@ -268,6 +601,7 @@ export default {
 .accountAuthorization-container {
   width: 100%;
   height: 100%;
+  background-color: #f9f9f9;
   .accountAuthorization-box {
     width: 90%;
     height: 600px;
@@ -277,17 +611,35 @@ export default {
       width: 100%;
       height: 55px;
       border-radius: 5px;
-      background: cadetblue;
+      background: #d9ecff;
+      padding-left: 15px;
+      box-sizing: border-box;
+      .accountAuthorization-header-screen-box {
+        width: 92%;
+        float: left;
+        height: 100%;
+        .el-form {
+          margin-top: 5px;
+        }
+      }
+      .accountAuthorization-header-buttons-box {
+        width: 8%;
+        float: left;
+        height: 100%;
+        .el-button {
+          margin-top: 10px;
+        }
+      }
     }
     .accountAuthorization-table-box {
       width: 100%;
       margin-top: 10px;
       height: calc(100% - 65px);
-      border-radius: 5px;
-      background: cadetblue;
-      padding: 10px;
       box-sizing: border-box;
+      border: 3px solid #d9ecff;
+      border-radius: 5px;
       .accountAuthorization-table {
+        border-radius: 5px;
         .table-expand {
           label {
             width: 90px;
@@ -346,6 +698,30 @@ export default {
       }
       .el-switch {
         margin-right: 10px;
+      }
+    }
+  }
+  .add-dialog-form {
+    margin: 0 auto;
+    height: auto;
+    overflow: auto;
+    .el-form-item {
+      box-sizing: border-box;
+      margin: 0;
+      label {
+        width: 90px;
+      }
+      .el-input {
+        width: calc(80% - 90px);
+        .el-input__inner {
+          margin-top: 5px;
+        }
+      }
+      .el-select {
+        width: calc(80% - 90px);
+        .el-input {
+          width: 100%;
+        }
       }
     }
   }
