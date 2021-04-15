@@ -40,7 +40,6 @@ const tableColumns = [
   {
     prop: 'en_name',
     label: '企业名称',
-    inputType: 'input',
     isExpand: true,
     edit: false,
     required: true
@@ -48,7 +47,6 @@ const tableColumns = [
   {
     prop: 'addr',
     label: '企业地址',
-    inputType: 'input',
     isExpand: true,
     edit: false,
     required: true
@@ -56,7 +54,6 @@ const tableColumns = [
   {
     prop: 'legal_person',
     label: '法人',
-    inputType: 'input',
     isExpand: true,
     edit: false,
     required: true
@@ -64,7 +61,6 @@ const tableColumns = [
   {
     prop: 'tel',
     label: '联系方式',
-    inputType: 'input',
     isExpand: true,
     edit: false,
     required: true,

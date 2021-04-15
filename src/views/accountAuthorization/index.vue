@@ -572,7 +572,7 @@ export default {
         if (!valid) {
           return;
         } else {
-          const { code, msg } = await this.$http.put(
+          const { code, msg } = await this.$http.post(
             '/users/createUserInfo',
             this.$qs.stringify({ userInfo: this.addForm })
           );
