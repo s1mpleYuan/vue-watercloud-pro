@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import { Login } from '../api/user';
 export default {
   data() {
     return {
@@ -55,39 +56,33 @@ export default {
       },
     };
   },
-  created() {
-  },
+  created() {},
   methods: {
     async login() {
-      // const { data, code, msg } = await this.$http.get(
-      //   `/login?account=${this.loginForm.account}&pwd=${this.loginForm.password}`
-      // );
-      const { data, code, msg } = await this.$http.post('/users/login', this.$qs.stringify(this.loginForm));
-      
-      const curLoading = this.$loading({
+      const { data, code, msg } = await Login(this.loginForm);
+
+      let loading = this.$loading({
         lock: true,
-        text: '登录中...'
+        text: '登录中...',
       });
-      setTimeout(() => {
-        if (code === 1) {
-          this.user = data;
-          localStorage.setItem('userInfo', JSON.stringify(this.user));
-          localStorage.setItem('token', data.token);
-          curLoading.close();
-          this.$message.success({
-            message: msg,
-            duration: 1000,
-          });
-          const exitPath = sessionStorage.getItem('exitPath');
-          this.$router.push(exitPath || '/home');
-        } else {
-          curLoading.close();
-          this.$message.error({
-            message: msg,
-            duration: 2000,
-          });
-        }
-      }, 1500);
+      if (code === 1) {
+        this.user = data;
+        localStorage.setItem('userInfo', JSON.stringify(this.user));
+        localStorage.setItem('token', data.token);
+        loading.close();
+        this.$message.success({
+          message: msg,
+          duration: 1000,
+        });
+        const exitPath = sessionStorage.getItem('exitPath');
+        this.$router.push(exitPath || '/home');
+      } else {
+        loading.close();
+        this.$message.error({
+          message: msg,
+          duration: 2000,
+        });
+      }
     },
   },
 };

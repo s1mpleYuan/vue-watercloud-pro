@@ -177,6 +177,7 @@
 <script>
 import Header from '@/components/header';
 import { tableColumns } from './table';
+import { queryWaterMeterCopyRecords } from '@/api/dataplatform';
 export default {
   components: {
     Header,
@@ -273,6 +274,10 @@ export default {
     },
     // 根据条件查询水表抄收数据
     async queryWaterMeterCopyRecords() {
+      let loading = this.$loading({
+        lock: true,
+        text: '查询中...'
+      });
       let fields = [];
       this.checkOption.forEach((item) => {
         fields.push(item.prop);
@@ -281,16 +286,18 @@ export default {
         condition: this.dataSearch,
         fields: fields,
       };
-      const { data, code, msg } = await this.$http.post(
-        '/watermeter/queryWaterMeterCopyRecords',
-        this.$qs.stringify(params)
-      );
+      const { data, code, msg } = await queryWaterMeterCopyRecords(params);
+      // let loading = this.$loading({
+      //   locak: true,
+      // })
       if (code == 1) {
         this.data = data;
-        console.log(data);
+        // console.log(data);
         this.searchResArray = this._.cloneDeep(this.data);
+        loading.close();
       } else if (code == -1) {
         console.error(msg);
+        loading.close();
       }
     },
     // 全选按钮change事件

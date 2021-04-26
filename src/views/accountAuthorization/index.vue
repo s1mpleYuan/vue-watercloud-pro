@@ -40,8 +40,8 @@
                 size="small"
                 @change="changeSelect('enabled', form.enabled)"
               >
-                <el-option label="启用" :value="0"></el-option>
-                <el-option label="禁用" :value="1"></el-option>
+                <el-option label="启用" :value="1"></el-option>
+                <el-option label="禁用" :value="0"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item>
@@ -97,11 +97,11 @@
                 </span>
               </span>
               <span v-else-if="item.prop == 'enabled'">
-                <b v-if="scope.row[item.prop] == '0'" style="color:#67C23A">
+                <b v-if="scope.row[item.prop] == '1'" style="color:#67C23A">
                   启用
                 </b>
                 <b
-                  v-else-if="scope.row[item.prop] == '1'"
+                  v-else-if="scope.row[item.prop] == '0'"
                   style="color:#F56C6C"
                 >
                   禁用
@@ -129,13 +129,13 @@
                   </span>
                   <span v-else-if="formItem.prop == 'enabled'">
                     <b
-                      v-if="curRowForm[formItem.prop] == '1'"
+                      v-if="curRowForm[formItem.prop] == '0'"
                       style="color:#F56C6C"
                     >
                       禁用
                     </b>
                     <b
-                      v-else-if="curRowForm[formItem.prop] == '0'"
+                      v-else-if="curRowForm[formItem.prop] == '1'"
                       style="color:#67C23A"
                     >
                       启用
@@ -191,12 +191,12 @@
             <el-switch
               v-model="editForm[item.prop]"
               active-color="#13ce66"
-              :active-value="0"
-              :inactive-value="1"
+              :active-value="1"
+              :inactive-value="0"
               inactive-color="#ff4949"
             ></el-switch>
-            <b v-if="editForm[item.prop] == '1'">禁用</b>
-            <b v-else-if="editForm[item.prop] == '0'">启用</b>
+            <b v-if="editForm[item.prop] == '0'">禁用</b>
+            <b v-else-if="editForm[item.prop] == '1'">启用</b>
           </span>
           <div v-if="item.inputType == 'radio'">
             <el-radio v-model="editForm[item.prop]" size="mini" :label="0">
@@ -301,6 +301,14 @@
 <script>
 import Header from '@/components/header';
 import { tableColumns } from './table';
+import {
+  queryOtherUsersInfo,
+  queryUserInfoByConditions,
+  editUserInfo,
+  deleteUserInfo,
+  createUserInfo,
+  queryAllEnterpriseCode,
+} from '@/api/accountAuthorization';
 export default {
   components: {
     Header,
@@ -316,18 +324,21 @@ export default {
       }
     };
     return {
-      //
       // 顶部select change 事件筛选数组
-      queryArray: [{
-        key: "code",
-        value: ""
-      },{
-        key: "auth",
-        value: ""
-      },{
-        key:"enabled",
-        value: ""
-      }],
+      queryArray: [
+        {
+          key: 'code',
+          value: '',
+        },
+        {
+          key: 'auth',
+          value: '',
+        },
+        {
+          key: 'enabled',
+          value: '',
+        },
+      ],
       code: '',
       tableColumns: [],
       expands: [],
@@ -411,51 +422,57 @@ export default {
       this.queryUserInfoByCondition();
     },
     async queryUserInfoByCondition() {
+      let loading = this.$loading({
+        lock: true,
+        text: '查询中...',
+      });
       const params = {
         code: this.code,
         auth: JSON.parse(localStorage.getItem('userInfo')).auth,
-        conditions:this.queryArray
+        conditions: this.queryArray,
       };
-      const { data, code, msg } = await this.$http.post(
-        '/users/queryUserInfoByConditions',
-        this.$qs.stringify(params)
-      );
+      const { data, code, msg } = await queryUserInfoByConditions(params);
       if (code === 1) {
         this.$nextTick(() => {
           this.tableData = data;
+          loading.close();
         });
       } else {
+        loading.close();
         this.$message({
           type: 'error',
           message: msg,
         });
       }
     },
-    // 重置select 
-    resetSelect (){
-      this.queryArray.forEach(item => {
-        item.value = "";
+    // 重置select
+    resetSelect() {
+      this.queryArray.forEach((item) => {
+        item.value = '';
       });
       this.queryUserInfoByCondition();
       this.form = {};
-      this.form.code = this.code == '000' ? '':this.code;
+      this.form.code = this.code == '000' ? '' : this.code;
     },
     // 获取其他所有账户信息(只获取该账户所属公司下的账户)
     async getOtherUserInfoList() {
+      let loading = this.$loading({
+        lock: true,
+        text: '获取中...',
+      });
       const params = {
         code: this.userInfo.code,
         auth: this.userInfo.auth,
       };
-      const { data, code, msg } = await this.$http.post(
-        '/users/queryOtherUsersInfo',
-        this.$qs.stringify(params)
-      );
+      const { data, code, msg } = await queryOtherUsersInfo(params);
       if (code == 1) {
         this.$nextTick(() => {
           this.tableData = data;
           this.expands = [];
+          loading.close();
         });
         if (data.length == 0) {
+          loading.close();
           this.$message({
             type: 'warning',
             message: msg,
@@ -490,21 +507,24 @@ export default {
     },
     // 编辑弹窗编辑按钮
     async editUserInfo() {
+      let loading = this.$loading({
+        lock: true,
+        text: '提交中...',
+      });
       const userInfo = this._.cloneDeep(this.editForm);
       userInfo.enabled = this.editForm.enabled ? 1 : 0;
-      const { code, msg } = await this.$http.put(
-        '/users/editUserInfo',
-        this.$qs.stringify({ userInfo })
-      );
+      const { code, msg } = await editUserInfo({ userInfo });
       if (code == 1) {
+        loading.close();
         this.$message({
           type: 'success',
           message: msg,
           duration: 1500,
         });
+        this.editDialogShow = false;
         this.getOtherUserInfoList();
-        this.dialogShow = false;
       } else {
+        loading.close();
         this.$message({
           type: 'error',
           message: msg,
@@ -514,11 +534,16 @@ export default {
     },
     // 删除用户
     async deleteUserInfo() {
-      const { account } = this.curRowForm;
-      const { code, msg } = await this.$http.delete(
-        `/users/deleteUserInfo?account=${account}`
-      );
+      let loading = this.$loading({
+        lock: true,
+        text: '删除中...',
+      });
+      const params = {
+        account: this.curRowForm.account,
+      };
+      const { code, msg } = await deleteUserInfo(params);
       if (code === 1) {
+        loading.close();
         this.$message({
           type: 'success',
           message: msg,
@@ -526,6 +551,7 @@ export default {
         });
         this.getOtherUserInfoList();
       } else {
+        loading.close();
         this.$message({
           type: 'error',
           message: msg,
@@ -548,9 +574,7 @@ export default {
       });
     },
     async queryAllEnterpriseCode() {
-      const { data, code, msg } = await this.$http.get(
-        '/enterprises/queryAllEnterpriseCode'
-      );
+      const { data, code, msg } = await queryAllEnterpriseCode();
       if (code == 1) {
         this.$nextTick(() => {
           this.codeSelectOptions = data;
@@ -572,11 +596,16 @@ export default {
         if (!valid) {
           return;
         } else {
-          const { code, msg } = await this.$http.post(
-            '/users/createUserInfo',
-            this.$qs.stringify({ userInfo: this.addForm })
-          );
+          let loading = this.$loading({
+            lock: true,
+            text: '添加中...',
+          });
+          const params = {
+            userInfo: this.addForm,
+          };
+          const { code, msg } = await createUserInfo(params);
           if (code === 1) {
+            loading.close();
             this.$message({
               type: 'success',
               message: msg,
@@ -584,6 +613,7 @@ export default {
             this.addDialogShow = false;
             this.getOtherUserInfoList();
           } else {
+            loading.close();
             this.$message({
               type: 'error',
               message: msg,

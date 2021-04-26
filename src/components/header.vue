@@ -101,7 +101,7 @@
               round
               size="small"
             >
-              <b>{{ `${userInfo.username}&nbsp;欢迎您！` || '' }}</b>
+              <b>{{ `${usernameComputed}&nbsp;欢迎您！` || '' }}</b>
             </el-button>
           </el-popover>
         </div>
@@ -174,6 +174,20 @@ export default {
       direction: 'rtl',
       returnIcon: require('@/assests/images/header/return_white.png'),
     };
+  },
+  computed: {
+    usernameComputed: () => {
+      let { username } = JSON.parse(localStorage.getItem('userInfo'));
+      let nameArr = username.split('');
+      let length = nameArr.length;
+      if (length > 5) {
+        var result="";
+        for (let i = 0; i < 5; i++) {
+          result += nameArr[i];
+        }
+        return result + '...';
+      } else return username;
+    }
   },
   created() {
     this.userInfo = JSON.parse(localStorage.getItem('userInfo'));

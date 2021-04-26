@@ -1,8 +1,8 @@
-import Vue from'vue';
+import Vue from 'vue';
 import Vuex from 'vuex';
 
 import getters from './getters';
-import users from './modules/users';
+import region from './modules/region';
 
 Vue.use(Vuex);
 
@@ -14,7 +14,7 @@ Vue.use(Vuex);
 // });
 export default new Vuex.Store({
   modules: {
-		users
+    region
   },
-	getters
+  getters
 });

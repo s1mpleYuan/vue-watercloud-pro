@@ -8,11 +8,10 @@ import _ from 'lodash';
 import 'font-awesome/css/font-awesome.css';
 import Qs from 'qs';
 import './assests/css/theme.css';
+import dayjs from 'dayjs';
 // import { getThemeClass } from './utils/theme';
 
-
-// Vue.prototype.$theme = 'primary';
-// Vue.prototype.$getThemeClass = getThemeClass;
+Vue.prototype.$dayjs = dayjs;
 Vue.prototype.$qs = Qs;
 Vue.prototype._ = _;
 // import Echarts from './plugins/echarts';
@@ -25,15 +24,18 @@ Vue.use(Echarts);
 
 // 导入Element及组件库相关样式
 import 'element-ui/lib/theme-chalk/index.css';
-
 Vue.prototype.$http = axios;
+
 // 配置请求的根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/';
 
 axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = token;
+  const { url } = config;
+  if (!url.includes('http')) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = token;
+    }
   }
   return config;
 });
