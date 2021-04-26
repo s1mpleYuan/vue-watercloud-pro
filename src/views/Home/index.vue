@@ -78,6 +78,7 @@ export default {
       .user-setting-box {
         height: 15%;
         width: 100%;
+        margin-top: 15px;
         text-align: center;
         .switch {
           margin-top: 20px;
